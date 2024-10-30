@@ -27441,6 +27441,7 @@
 					onError: onError
 				});
 				request = new XMLHttpRequest();
+				request.timeout = 5000;
 				request.open('GET', url, true);
 				request.addEventListener('load', function (event) {
 					var response = this.response;
@@ -27479,7 +27480,7 @@
 						if (callback.onProgress) callback.onProgress(event);
 					}
 				}, false);
-				request.addEventListener('error', function (event) {
+				request.addEventListener('timeout', function (event) {
 					var callbacks = loading[url];
 					delete loading[url];
 
@@ -27491,12 +27492,24 @@
 					scope.manager.itemError(url);
 					scope.manager.itemEnd(url);
 				}, false);
-				request.addEventListener('abort', function (event) {
+				request.addEventListener('error', function (event) {
 					var callbacks = loading[url];
 					delete loading[url];
 
 					for (var _i5 = 0, il = callbacks.length; _i5 < il; _i5++) {
 						var callback = callbacks[_i5];
+						if (callback.onError) callback.onError(event);
+					}
+
+					scope.manager.itemError(url);
+					scope.manager.itemEnd(url);
+				}, false);
+				request.addEventListener('abort', function (event) {
+					var callbacks = loading[url];
+					delete loading[url];
+
+					for (var _i6 = 0, il = callbacks.length; _i6 < il; _i6++) {
+						var callback = callbacks[_i6];
 						if (callback.onError) callback.onError(event);
 					}
 

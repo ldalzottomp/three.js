@@ -36721,6 +36721,7 @@ FileLoader.prototype = Object.assign( Object.create( Loader.prototype ), {
 			} );
 
 			request = new XMLHttpRequest();
+			request.timeout = 5000;
 
 			request.open( 'GET', url, true );
 
@@ -36780,6 +36781,24 @@ FileLoader.prototype = Object.assign( Object.create( Loader.prototype ), {
 				}
 
 			}, false );
+
+			request.addEventListener( 'timeout', function (event) {
+				
+				const callbacks = loading[ url ];
+
+				delete loading[ url ];
+
+				for ( let i = 0, il = callbacks.length; i < il; i ++ ) {
+
+					const callback = callbacks[ i ];
+					if ( callback.onError ) callback.onError( event );
+
+				}
+
+				scope.manager.itemError( url );
+				scope.manager.itemEnd( url );
+
+			}, false);
 
 			request.addEventListener( 'error', function ( event ) {
 
